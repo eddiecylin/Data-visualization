@@ -10,3 +10,7 @@ With crime data from offical sources, this project uses choropleth maps in Pytho
 [2. Fire Incidents in New York City & Average Firefighting Response Time across 5 Boroughs](https://github.com/eddiecylin/data-visualization/tree/master/fire-incidents-new-york)
 
 With offical data from FDNY, this projet uses R and plot to clean, wrangle, compute, and visualize data on NYC fire incidents across its 5 boroughs. The goal is to see if the average firefighting response time differs between different boroughs and if the distance between a fire incident and a firestation affects response time. 
+
+[3. Corporate Income Tax Rates & Number of Fortune 500 Companies in Each State](https://github.com/eddiecylin/data-visualization/tree/master/fortune_500)
+
+This projects uses R and ggplot to scrape statistics from webpages about population, corporate income tax, and number of Fortune 500 countries in each state (excluding Alaska and Hawaii). With geospatial data on those companies' locations, this project aims to see if icorporate income tax rates population will and other facotrs that may affact where Fortune 500 companies set their headquarters in.
