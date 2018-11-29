@@ -1,0 +1,187 @@
+---
+title: "Fortune-500"
+author: "Eddie LIN"
+date: "2/27/2018"
+output: html_document
+---
+
+1. get the HTML table of company's infofrom from the web 
+2. write it as a CSV file 
+```{r}
+library(XML)
+library(RCurl)
+fortune500_url <- getURL("https://www.geolounge.com/fortune-500-list-by-state-for-2015/",.opts = list(ssl.verifypeer = FALSE) ) 
+fortune500 = readHTMLTable(fortune500_url, header = TRUE, which = 1)
+colnames(fortune500) <- tolower(colnames(fortune500))
+fortune500 <- subset(fortune500,select=c("company","streetadd","place","state","zip"))
+write.csv(fortune500, "fortune500.csv")
+```
+
+read in the csv file 
+```{r}
+library(readr)
+fortune500 <- as.data.frame(read_csv("fortune500.csv"))
+```
+
+compute number of companies by state
+```{r}
+library(dplyr)
+library(tidyverse) 
+
+company.by.state <- select(fortune500, state)
+company.by.state$count <- 1
+company.by.state <- company.by.state %>%
+        group_by(state) %>% 
+        summarise(total = sum(count))
+```
+
+create a USA map
+```{r}
+library(maps)
+library(ggthemes)
+library(ggplot2)
+library(tibble)
+library(stringr)
+us.states <- map_data("state")
+us.states <- as_data_frame(us.states)
+us.states <- dplyr::rename(us.states, state = region)
+us.states$subregion = NULL
+us.states$state <- str_to_title(us.states$state)
+us.states
+```
+store state locaton as a dataframe
+```{r}
+statenames <- as_data_frame(
+  cbind(state=state.name, state.abb = state.abb, 
+        state.center.x = state.center$x, 
+        state.center.y = state.center$y))
+statenames <- statenames %>% mutate_each_(funs(as.numeric), 
+                 vars=c("state.center.x","state.center.y"))
+us.states <- left_join(us.states, statenames)
+str(us.states)
+```
+
+merge `company.by.state` and `us.states` with left_join
+```{r}
+company.by.state.merged = left_join(us.states, company.by.state) 
+# change the NA into 0 so that the states having no Fortune500 will show `0` on the map
+
+company.by.state.merged$total <-  ifelse(is.na(company.by.state.merged$total) == 'TRUE', 0, company.by.state.merged$total)
+# for some reason, the `state.center.y` for Florida is negative but should be converted into positive (27.8744)
+
+company.by.state.merged$state.center.y <- ifelse(company.by.state.merged$state.center.y == -27.8744, 27.8744, company.by.state.merged$state.center.y)
+```
+
+plot Fortune 500 companies and their locations 
+```{r}
+
+fortune500.location <- ggplot(company.by.state.merged, 
+    aes(x = long, y = lat, group=group, label = state)) + 
+    geom_polygon(aes(fill = total), color = "black") + 
+            scale_fill_gradientn(colours=c("lightblue","dark blue")) +
+  geom_text(data=company.by.state.merged, inherit.aes = FALSE, 
+            aes(label=total, x=state.center.x, y=state.center.y), colour="black", size = 3.5, family =  "sans", na.rm = FALSE) +
+  theme_map() + 
+        coord_map(projection = "mercator") + 
+        ggtitle("Number of Fortune 500 Companies by State") + 
+        theme(plot.title = element_text(hjust = 0.5))
+
+fortune500.location
+```
+
+plot US states shaded by corporate income tax
+```{r}
+#create a merged df with tax rates:
+tax <- as_data_frame(read.csv("tax.csv"))
+tax$state <- str_to_title(tax$state)
+us.states.tax.merged = left_join(us.states, tax) # excluding Alaska & Hawaii
+# create a new column that has numeric value of tax rates
+colnames(us.states.tax.merged) <- tolower(colnames(us.states.tax.merged))
+us.states.tax.merged$tax_rate <- gsub("%","",us.states.tax.merged$rates)
+us.states.tax.merged$tax_rate <- as.numeric(us.states.tax.merged$tax_rate)
+# correct FLorida's `state.center.y`
+us.states.tax.merged$state.center.y <- ifelse(us.states.tax.merged$state.center.y == -27.8744, 27.8744, us.states.tax.merged$state.center.y)
+
+
+write.csv(us.states.tax.merged, "us.states.tax.merged.csv")
+```
+
+plot us states shaded by tax rates
+```{r}
+fortune500.tax <- ggplot(us.states.tax.merged, 
+    aes(x = long, y = lat, group=group, label = state)) + 
+    geom_polygon(aes(fill = tax_rate), color = "white") + 
+            scale_fill_gradientn(colours=c("light green","dark green")) +
+  geom_text(data = us.states.tax.merged, inherit.aes = FALSE, 
+            aes(label=rates, x=state.center.x, y=state.center.y + 0.5), colour="black", size = 2.5, family =  "sans", na.rm = FALSE) + 
+        geom_text(data = us.states.tax.merged, inherit.aes = FALSE, 
+            aes(label=state.abb, x=state.center.x, y=state.center.y - 0.5), colour="black", size = 2.5, family =  "sans", na.rm = FALSE) + theme_map() + coord_map() + labs(x= "", y = "") +
+        ggtitle("Corporate Income Tax Rates by State") + 
+        theme(plot.title = element_text(hjust = 0.5))
+
+fortune500.tax
+```
+
+Scatter plot of income tax rates and # of headquarters
+```{r}
+f500.merged <- left_join(company.by.state.merged, us.states.tax.merged)
+
+g.tax.hq <- ggplot(f500.merged) + geom_point(aes(x=tax_rate, y = total)) + 
+        theme_minimal() + 
+        geom_smooth(aes(x=tax_rate, y = total), formula = y ~ x, color = "red") +
+        xlab("tax_rate") + 
+        ylab("#_of_Fortune_500_companies_within_state") +
+        ggtitle("Do Lower Tax Rates Attract Fortune 500 Companies? ") + 
+        theme(plot.title = element_text(hjust = 0.5))
+
+g.tax.hq
+# there is no direct positive correlation between number of company HQs and low tax rates
+```
+
+add state population as another feature
+```{r}
+library(readr)
+state.pop.url <- getURL("https://en.wikipedia.org/wiki/List_of_U.S._states_and_territories_by_population",.opts = list(ssl.verifypeer = FALSE) ) 
+state.pop <- readHTMLTable(state.pop.url, header = TRUE, which = 1)
+
+colnames(state.pop) <- tolower(colnames(state.pop))
+
+state.pop <- subset(state.pop,select=c("state or territory\n", "population estimate, july 1, 2017[4]"))
+
+colnames(state.pop) <- c("state", "population")
+state.pop.df  <- as_data_frame(state.pop)
+# plot `geom_point` again
+
+f500.merged.pop <- left_join(f500.merged, state.pop.df)
+f500.merged.pop$population <- as.numeric(f500.merged.pop$population)
+f500.merged.pop$hqpercapita <- (f500.merged.pop$total/f500.merged.pop$population)
+
+g.tax.hq.pop <- ggplot(f500.merged.pop) + geom_point(aes(x=tax_rate, y = hqpercapita)) + theme_minimal() + geom_smooth(aes(x=tax_rate, y = hqpercapita), formula = y ~ x, color = "red") + 
+        xlab("tax_rate") + 
+        ylab("#_of_Fortune_500_companies_within_state_per_capita") + 
+         ggtitle("Relationship between Tax Rates & Number of Fortune 500 Companies Per Capita") + 
+        theme(plot.title = element_text(hjust = 0.5))
+
+g.tax.hq.pop
+```
+
+put 2 loess regression plots together
+```{r}
+g.tax.hq.capita  <- ggplot(f500.merged.pop) + geom_point(aes(x=tax_rate, y = hqpercapita, color = "per capita")) + theme_minimal() + geom_smooth(aes(x=tax_rate, y = hqpercapita), formula = y ~ x, color = "red") +
+        geom_point(aes(x=tax_rate, y = total, color = "total")) + theme_minimal() + geom_smooth(aes(x=tax_rate, y = total), formula = y ~ x, color = "blue") +  labs(title = "Relationship between Number of Fortune 500 Companies & Tax Rate", x =  "corporate income tax rate", y = "number of Fortune500 HQs", color = "criteria") + theme(plot.title = element_text(hjust = 0.5)) + 
+        xlab("corporate_income_tax_rate") + 
+        ylab("#_of_Fortune_500_companies")
+
+        
+g.tax.hq.capita
+
+```
+
+
+
+
+
+
+
+
+
