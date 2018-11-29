@@ -1,11 +1,12 @@
-# Python Choropleth Maps for Crime Data in San Francisco
-
-This repo contains a `python notebook`, `csv` and `geoson` data to plot choropleth map to show crime frequencies 
-in different districts in San Francisco.
+# Use Plotly to visualize fire NYC fire incidents & average firefighting response time across 5 boroughs
 
 
-Crime data source: (https://cocl.us/datascience_survey_data)
-  
-Geojason data source: (https://cocl.us/sanfran_geojson](https://cocl.us/sanfran_geojson)
 
-![sf_crimes_map](https://github.com/eddiecylin/data-visualization/blob/master/crime_rates_in_san_%20francisco/sf_crimes.png)
+
+
+
+![MH]()
+![BX]()
+![QU]()
+![SI]()
+![MH]()
