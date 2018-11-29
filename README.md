@@ -13,4 +13,4 @@ With offical data from FDNY, this projet uses R and plot to clean, wrangle, comp
 
 [3. Corporate Income Tax Rates & Number of Fortune 500 Companies in Each State](https://github.com/eddiecylin/data-visualization/tree/master/fortune_500)
 
-This project uses R and ggplot to scrape statistics from webpages about population, corporate income tax, and number of Fortune 500 countries in each state (excluding Alaska and Hawaii). With geospatial data on those companies' locations, this project aims to see if icorporate income tax rates population will and other facotrs that may affact where Fortune 500 companies set their headquarters in.
+This project uses R and ggplot to scrape statistics data from webpages about population, corporate income tax, and number of Fortune 500 countries in each state (excluding Alaska and Hawaii). With geospatial data on those companies' locations, this project aims to see if corporate income tax rates, population, and other facotrs will affect where Fortune 500 companies set their headquarters in.
