@@ -4,9 +4,7 @@ This repository stores several data visualization projects I have completed. Eac
 
 [1. Compare Crime Frequencies across Different Districts in San Francisco](https://github.com/eddiecylin/data-visualization/tree/master/crime_rates_in_san_%20francisco)
 
-Using crime data from offical sources, this project uses .... in Python to show the frequencies(density) of crimes in different districts 
-in San Francisco. The types of crimes are not differentiated on the map and counted as a aggregate sum for each district.
-
+Using crime data from offical sources, this project uses choropleth maps in Python to show the frequencies(density) of crimes in different districts in San Francisco. The types of crimes are not differentiated on the map and counted as a aggregate sum for each district.
 
 
 [2. Fire Incidents in New York City & Average Firefighting Response Time across 5 Boroughs](https://github.com/eddiecylin/data-visualization/tree/master/fire-incidents-new-york)
