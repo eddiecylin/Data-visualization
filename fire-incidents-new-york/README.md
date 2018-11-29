@@ -1,6 +1,6 @@
 ## Use Plotly to visualize fire NYC fire incidents & average firefighting response time across 5 boroughs
 
-Y-axis: The unit of average response time is second(s)
+Y-axis: The unit of average response time is second(s)    
 X-axis: The definition of the cloest distance is the distance between each fire incident and its cloest firestaton
 
 ![MH](https://github.com/eddiecylin/data-visualization/blob/master/fire-incidents-new-york/Manhattan.png)
