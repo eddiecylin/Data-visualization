@@ -1,0 +1,151 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set( echo=FALSE, message=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE)
+
+```
+
+```{r}
+library(devtools)
+library(leaflet)
+library(dplyr)
+library(tidyr)
+devtools::install_github("rstudio/leaflet")
+df1 <- read.csv("severe_incidents.csv")
+```
+
+```{r}
+library(RColorBrewer)
+pal = colorFactor("Reds", domain = df1$FIRE_SPREAD_DESC) 
+color_duration = pal(df1$FIRE_SPREAD_DESC)
+
+```
+
+```{r}
+# recode `PROPERTY_USE_DESC`
+df1$PROPERTY_USE_DESC <- as.character(df1$PROPERTY_USE_DESC)
+dt <- df1
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^0', dt$PROPERTY_USE_DESC), "property", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^1', dt$PROPERTY_USE_DESC), "public recreation", dt$PROPERTY_USE_DESC) 
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^2', dt$PROPERTY_USE_DESC), "school/education", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^3', dt$PROPERTY_USE_DESC), "medical/enforcement", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^4', dt$PROPERTY_USE_DESC), "residential", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^5', dt$PROPERTY_USE_DESC), "supplies/post(business) service", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^6', dt$PROPERTY_USE_DESC), "research/utility facility", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^7', dt$PROPERTY_USE_DESC), "maufacturing", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^8', dt$PROPERTY_USE_DESC), "storage/parking", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^9', dt$PROPERTY_USE_DESC), "street/constrction/nature", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^N', dt$PROPERTY_USE_DESC), "none", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <-ifelse(grepl('^U', dt$PROPERTY_USE_DESC), "undetermined", dt$PROPERTY_USE_DESC)
+dt$PROPERTY_USE_DESC <- as.factor(dt$PROPERTY_USE_DESC)
+# get rid of 1 data point whose property type is labeled "none"
+dt2 <- filter(dt, !(dt$PROPERTY_USE_DESC %in% "none")) 
+```
+
+```{r}
+pal2 = colorFactor("Set3", domain = dt2$PROPERTY_USE_DESC) 
+color_property_type = pal2(dt2$PROPERTY_USE_DESC)
+
+```
+
+```{r}
+# read firehouse info.
+fh <- read.csv("FDNY_Firehouse_Listing.csv") 
+
+```
+
+
+```{r}
+# calculate response time
+library(lubridate)
+dt2.INCIDENT_DATE_TIME.new <- parse_date_time(dt2$INCIDENT_DATE_TIME, '%m/%d/%Y %I:%M:%S %p')
+dt2.ARRIVAL_DATE_TIME <- parse_date_time(dt2$ARRIVAL_DATE_TIME, '%m/%d/%Y %I:%M:%S %p')
+dt2$RESPONSE_TIME <- c(dt2.ARRIVAL_DATE_TIME - dt2.INCIDENT_DATE_TIME.new)
+
+dt2$RESPONSE_TIME <- as.numeric(dt2$RESPONSE_TIME)
+```
+```{r}
+library(dplyr)
+library(tidyr)
+dt3 <- dt2 %>% filter(!is.na(Latitude) | !is.na(Longitude))  
+fh2 <- fh %>% filter(!is.na(Latitude) | !is.na(Longitude))  
+
+incident.coor <- as.matrix(cbind(dt3$Longitude, dt3$Latitude))
+firehouse.coor <- as.matrix(cbind(fh2$Longitude, fh2$Latitude))
+```
+
+
+```{r}
+library(sp)
+clo <- c()
+
+for(i in 1:nrow(incident.coor)){
+        target.row <- incident.coor[i, ]
+        df.combined <- rbind(firehouse.coor, target.row)
+        dis <- spDistsN1(df.combined, df.combined[nrow(df.combined),],longlat = TRUE)
+        dis.final <- dis[1:length(dis)-1]
+        min.dis <- min(dis.final)
+        clo <- c(clo, min.dis)
+        
+}
+
+```
+
+```{r}
+dt3$CLOSEST_DISTANCE <- clo
+```
+
+```{r}
+library(ggplot2)
+library(cowplot)
+library(gridExtra)
+library(dplyr)
+library(plotly)
+```
+
+```{r}
+dt4 <- filter(dt3, !(CLOSEST_DISTANCE > 2 | RESPONSE_TIME > 500)) # remove outliers / or we can otherwise rescale x axis
+
+dt.m <- dt4 %>% filter( dt4$BOROUGH_DESC ==  "1 - Manhattan")
+dt.br <- dt4 %>% filter( dt4$BOROUGH_DESC ==  "2 - Bronx")
+dt.s <- dt4 %>% filter( dt4$BOROUGH_DESC ==  "3 - Staten Island")
+dt.bk <- dt4 %>% filter( dt4$BOROUGH_DESC ==  "4 - Brooklyn")
+dt.q <- dt4 %>% filter( dt4$BOROUGH_DESC ==  "5 - Queens")
+
+# manhattan 
+p_scatter.m <- ggplot(dt.m, aes(CLOSEST_DISTANCE, RESPONSE_TIME))
+p_scatter.m <- p_scatter.m + geom_point(color= "blue") + ggtitle("Manhattan") + theme(axis.text=element_text(size=8)) + geom_smooth(aes(x=CLOSEST_DISTANCE, y = RESPONSE_TIME), formula = y ~ x, color = "red")
+
+ggplotly()
+```
+
+```{r}
+# bronx
+p_scatter.br <- ggplot(dt.br, aes(CLOSEST_DISTANCE, RESPONSE_TIME))
+p_scatter.br <- p_scatter.br  + geom_point(color= "brown") + ggtitle("Bronx") + theme(axis.text=element_text(size=8)) + geom_smooth(aes(x=CLOSEST_DISTANCE, y = RESPONSE_TIME), formula = y ~ x, color = "red")
+
+ggplotly()
+```
+
+```{r}
+# staten island
+p_scatter.s <- ggplot(dt.s, aes(CLOSEST_DISTANCE, RESPONSE_TIME))
+p_scatter.s <- p_scatter.s + geom_point(color="green") + ggtitle("Staten Island") + theme(axis.text=element_text(size=8)) + geom_smooth(aes(x=CLOSEST_DISTANCE, y = RESPONSE_TIME), formula = y ~ x, color = "red")
+
+ggplotly()
+```
+
+```{r}
+# brooklyn
+p_scatter.bk <- ggplot(dt.bk, aes(CLOSEST_DISTANCE, RESPONSE_TIME))
+p_scatter.bk  <- p_scatter.bk  + geom_point(color ="pink") + ggtitle("Brooklyn") + theme(axis.text=element_text(size=8)) + geom_smooth(aes(x=CLOSEST_DISTANCE, y = RESPONSE_TIME), formula = y ~ x, color = "red")
+
+ggplotly()
+```
+
+```{r}
+
+p_scatter.q <- ggplot(dt.q, aes(CLOSEST_DISTANCE, RESPONSE_TIME))
+p_scatter.q <- p_scatter.q  + geom_point(color= "grey") + ggtitle("Queens") + theme(axis.text=element_text(size=8)) + geom_smooth(aes(x=CLOSEST_DISTANCE, y = RESPONSE_TIME), formula = y ~ x, color = "red")
+
+ggplotly()
+```
