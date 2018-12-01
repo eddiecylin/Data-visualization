@@ -1,16 +1,16 @@
 ## Analysis of Olympics Medals Winning from 1924 to 2014
 
-### (1) compare total medal won by different countries    
+### (1) Compare total medals won by different countries    
 ### > Biggest winners: USA, Canada, Norway
 <br><br><br>
 ![total](https://github.com/eddiecylin/data-visualization/blob/master/olympics/total_medals.png)
 
-### (2) compare medal winning between different genders of athletes  
-### > Male athletes won more medals than female athletes across different years
+### (2) Do Olympics have gender gap? 
+### > Yes, the total medals for female athletes are fewer than that for male athletes
 <br><br><br>
 ![genders](https://github.com/eddiecylin/data-visualization/blob/master/olympics/genders.png)
 
-### (3) which countries have host country advantage to win Olympics medals?    
-### > Canada, Russia, Switzerland, USA appear to have host country advantage
+### (3) Which countries have host country advantage to win Olympics medals?    
+### > Canada, Russia, Switzerland, USA appear to have host country advantage though they also perform well in other countries
 <br><br><br>
 ![host](https://github.com/eddiecylin/data-visualization/blob/master/olympics/host_advantage.png)
