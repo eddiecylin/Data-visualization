@@ -1,0 +1,164 @@
+---
+title: "Analysis of Olympics Medals"
+author: Eddie
+date: 2018-11-30
+always_allow_html: yes
+output: 
+  html_document:
+    keep_md: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+import data
+```{r}
+dic <- as.data.frame(read.csv("dictionary.csv"))
+winter <- as.data.frame(read.csv("winter.csv"))
+```
+
+import packages
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(plotly)
+library(stringr)
+```
+
+visualize aggregate numbers of medals for different countries 
+```{r}
+df1 <- select(winter, Year, Country, Event, Medal)
+df2 <- select(df1, Country)
+df2$Count <- 1
+
+# total medals ranked by country 
+df3 <- df2 %>%
+        group_by(Country) %>% 
+        summarise(Total = sum(Count)) %>%
+        arrange(desc(Total))  
+
+# medals of each type by country
+df4 <- select(df1, Country, Medal)
+df4$Count <- 1
+df4 <- arrange(df4, desc(Country))
+df4$Medal <- factor(df4$Medal, levels = c("Bronze", "Silver", "Gold"))
+
+g_stacked <- ggplot(df4, aes(Country))
+g_stacked <- g_stacked + geom_bar(aes(fill = Medal), position = position_stack(reverse = TRUE)) + scale_fill_manual(values=c("#cc6600","#9da99b", "#e6bb43")) + scale_x_discrete(limits = rev(levels(df4$Country))) + coord_flip() + theme(legend.position = "top", axis.text=element_text(size=6), axis.title=element_text(size=12, face="bold"), plot.title = element_text(hjust = 0.5)) + ggtitle("Number of Medals Won by Different Countries (1924 ~ 2014)")
+
+g_stacked
+```
+
+visualize medals won by athletes of different genders (top 10 medal winning countries)
+```{r}
+# Year, Country, Medal, Gender
+df_gender_year <- select(winter, Year, Country, Medal, Gender)
+df_gender_year$count <- 1
+df_gender_year2 <- df_gender_year %>% 
+        group_by(Year, Country, Medal, Gender) %>% 
+        summarise(Total = sum(count))
+
+# get top 10 country by total medals
+df3_ordered <- arrange(df3, desc(Total))
+print(head(df3_ordered$Country, n = 10))
+top10 <- c("USA","CAN","NOR","URS","FIN","SWE","GER","SUI","AUT","RUS")
+# filter out top 10 countries from `df_gender_year2`
+df_gender_year2$Country <- as.character(df_gender_year2$Country)
+df_gender_year3 <- df_gender_year2 %>%
+        filter(Country %in% top10)
+# check if there are only 10 unique countries in `df_gender_year3$Country`
+length(unique(df_gender_year3$Country)) == 10
+ 
+# check out gender pattern in medal winning
+df_gender_year3$Country <- as.factor(df_gender_year3$Country)
+df_gender_year4 <- df_gender_year3 %>% 
+        group_by(Year, Medal, Gender) %>% 
+        summarise(TOTAL = sum(Total))
+
+# plot it as 3 kinds of medals w/ 2 genders
+df_gender_year4$Year <- as.factor(df_gender_year4$Year)
+df_gender_year4$Medal <- as.character(df_gender_year4$Medal)
+df_gender_year4$Gender <- as.factor(df_gender_year4$Gender)
+df_gender_year4$Medal_re <- factor(df_gender_year4$Medal, levels = c("Bronze", "Silver", "Gold"))
+
+g_gender <- ggplot(data = df_gender_year4, aes(x=Year, y = TOTAL, group = Gender, color = Gender)) + geom_line() + facet_grid (Medal_re ~ .)
+
+g_gender <- g_gender + scale_color_manual(values=c("#000080", "#ff0000")) + theme(legend.position='top', axis.text.x = element_text(angle = 60, hjust = 1), plot.title = element_text(hjust = 0.5)) + xlab("") + ylab("number_of_medals") + ggtitle("Number of Medals Won by Athletes of Different Genders")
+
+ggplotly()
+
+```
+
+see if host country had advantage of winning medals when the game was held in their own country
+```{r echo=TRUE, eval=FALSE}
+library(rvest)
+library(stringr)
+wiki_hosts <- read_html("https://en.wikipedia.org/wiki/Winter_Olympic_Games")
+hosts <- html_table(html_nodes(wiki_hosts, "table")[[5]], fill=TRUE)
+hosts <- hosts[-1,1:3]
+hosts$city <- str_split_fixed(hosts$Host, n=2, ",")[,1]
+hosts$country <- str_split_fixed(hosts$Host, n=2, ",")[,2]
+```
+
+Provide a visualization of the host country advantage (or abscence thereof). 
+```{r}
+# select columns form the `winter` df
+# this is a bit quick-& & dirty way to recode country names, it could be more efficient to do so by     # establishing a reference table with year & country name and them join it with the original dataframe
+df_host <- select(winter, Year, Country, Medal)
+df_host$Country01 <- 
+        ifelse(df_host$Year == 1924, "FRA",
+        ifelse(df_host$Year == 1928, "SUI", 
+        ifelse(df_host$Year == 1932, "USA",
+        ifelse(df_host$Year == 1936, "GER",
+        ifelse(df_host$Year == 1948, "SUI",
+        ifelse(df_host$Year == 1952, "NOR",
+        ifelse(df_host$Year == 1956, "ITA",
+        ifelse(df_host$Year == 1960, "USA",
+        ifelse(df_host$Year == 1964, "AUT",
+        ifelse(df_host$Year == 1968, "FRA",
+        ifelse(df_host$Year == 1972, "JPN",
+        ifelse(df_host$Year == 1976, "AUT",
+        ifelse(df_host$Year == 1980, "USA",                                                                                     
+        ifelse(df_host$Year == 1984, "YUG",
+        ifelse(df_host$Year == 1988, "CAN",
+        ifelse(df_host$Year == 1992, "FRA", 
+        ifelse(df_host$Year == 1994, "NOR",
+        ifelse(df_host$Year == 1998, "JPN",
+        ifelse(df_host$Year == 2002, "USA",
+        ifelse(df_host$Year == 2006, "ITA",
+        ifelse(df_host$Year == 2010, "CAN",
+        ifelse(df_host$Year == 2014, "RUS", NA))))))))))))))))))))))
+                                                                                                              
+```
+
+```{r}
+# filter & rename data frame
+df_host2 <- df_host %>% 
+        select(Country01, Country, Medal)
+colnames(df_host2) <- c("Host_Country", "Athlete_Country", "Medal")
+df_host2$Count <- 1
+df_host2 <- select(df_host2, -Medal)
+df_host2 <- df_host2 %>% 
+        group_by(Host_Country, Athlete_Country) %>% 
+        summarise(Total = sum(Count)) 
+       
+
+df_host2$Host_Country <- as.factor(df_host2$Host_Country)
+```
+
+```{r}
+# plot heat map
+library(plyr)
+df_host3 <- ddply(df_host2, .(Host_Country), transform, rescale = rescale(Total))
+
+g_heatmap <- ggplot(df_host3, aes(Host_Country, Athlete_Country)) + geom_tile(aes(fill = rescale), colour = "white") + scale_fill_gradient(low = "white", high = "steelblue") + scale_y_discrete(limits = rev(levels(df_host3$Athlete_Country))) + 
+        theme(axis.text=element_text(size=6), plot.title = element_text(hjust = 0.5)) + ggtitle("Analysis of Host Country Advantage")
+
+g_heatmap
+```
+
+
+
+
