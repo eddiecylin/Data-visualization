@@ -1,7 +1,7 @@
 ## Analysis of Olympics Medals Winning from 1924 to 2014
 
 ### (1) compare total medal won by different countries    
-
+<br><br>
 
 
 
