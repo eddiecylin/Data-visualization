@@ -14,3 +14,7 @@ With offical data from FDNY, this projet uses R and plot to clean, wrangle, comp
 [3. Corporate Income Tax Rates & Number of Fortune 500 Companies in Each State](https://github.com/eddiecylin/data-visualization/tree/master/fortune_500)
 
 This project uses R and ggplot to scrape statistics data from webpages about population, corporate income tax, and number of Fortune 500 countries in each state (excluding Alaska and Hawaii). With geospatial data on those companies' locations, this project aims to see if corporate income tax rates, population, and other facotrs will affect where Fortune 500 companies set their headquarters in.
+
+[4. Olympics Medals Analysis from 1924 to 2014]()
+
+This project uses R, ggplot, Plotly, and data scraping from webpages (HTML) for data visualization. Questions that this project attempts to answer include: (1) compare total medal won by different countries, (2) compare medal winning between different genders of athletes, and (3) which countries have host country advantage to win Olympics medals?
