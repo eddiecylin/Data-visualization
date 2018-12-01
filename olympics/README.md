@@ -1,7 +1,7 @@
 ## Analysis of Olympics Medals Winning from 1924 to 2014
 
 ### (1) compare total medal won by different countries    
-### > Big winners: USA, Canada, Norway
+### > Biggest winners: USA, Canada, Norway
 <br><br><br>
 ![total](https://github.com/eddiecylin/data-visualization/blob/master/olympics/total_medals.png)
 
