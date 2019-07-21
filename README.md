@@ -17,4 +17,4 @@ This project uses R and ggplot to scrape statistics data from webpages about pop
 
 [4. Olympics Medals Analysis from 1924 to 2014](https://github.com/eddiecylin/data-visualization/tree/master/olympics)
 
-This project uses R, ggplot, Plotly, and data scraped from webpages (HTML) for data visualization. Questions that this project attempts to answer include: (1) compare total medal won by different countries, (2) do Olympics have gender gap in giveing medals?, and (3) which countries have host country advantage to win Olympics medals?
+This project uses R, ggplot, Plotly, and data scraped from webpages (HTML) for data visualization. Questions that this project attempts to answer include: (1) compare total medal won by different countries, (2) do Olympics have gender gap in giving medals?, and (3) which countries have host country advantage to win Olympics medals?
