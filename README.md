@@ -9,7 +9,7 @@ With crime data from official sources, this project uses choropleth maps in Pyth
 
 [2. Fire Incidents in New York City & Average Firefighting Response Time across 5 Boroughs](https://github.com/eddiecylin/data-visualization/tree/master/fire-incidents-new-york)
 
-With offical data from FDNY, this projet uses R and plot to clean, wrangle, compute, and visualize data on NYC fire incidents across its 5 boroughs. The goal is to see if the average firefighting response time differs between different boroughs and if the distance between a fire incident and a firestation affects response time. 
+With official data from FDNY, this project uses R and plot to clean, wrangle, compute, and visualize data on NYC fire incidents across its 5 boroughs. The goal is to see if the average firefighting response time differs between different boroughs and if the distance between a fire incident and a fire station affects response time. 
 
 [3. Corporate Income Tax Rates & Number of Fortune 500 Companies in Each State](https://github.com/eddiecylin/data-visualization/tree/master/fortune_500)
 
